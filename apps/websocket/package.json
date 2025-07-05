@@ -9,9 +9,9 @@
     "dev": "tsc -b && node dist/index.js"
   },
   "dependencies": {
-    "@repo/typescript-config": "workspace:*",
     "@types/express": "^5.0.3",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "ws": "^8.18.3"
   },
   "keywords": [],
@@ -19,6 +19,9 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@types/ws": "^8.18.1"
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/ws": "^8.18.1",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/backend-common":"workspace:*"
   }
 }
