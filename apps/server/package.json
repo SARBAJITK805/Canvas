@@ -2,14 +2,16 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
+  "type":"module",
   "main": "index.js",
   "scripts": {
     "build": "tsc -b",
-    "start": "node dist/index.js",
-    "dev": "tsc -b && node dist/index.js"
+    "start": "node ./dist/index.js",
+    "dev": "npm run build && npm run start"
   },
   "dependencies": {
     "@types/express": "^5.0.3",
+    "bcryptjs": "^3.0.2",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2"
   },
@@ -18,7 +20,7 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@repo/backend-common": "workspace:*",
+    "@repo/common_backend": "workspace:*",
     "@repo/common": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/typescript-config": "workspace:*",

@@ -1,23 +1,21 @@
 {
-  "name": "@repo/backend-common",
+  "name": "@repo/common_backend",
   "version": "1.0.0",
   "description": "",
+  "type":"module",
   "main": "index.js",
+  "exports":{
+    "./config":"./src/index.ts"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "exports": {
-    "./config": "./src/index.ts"
-  },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "@repo/prisma":"workspace:*"
+    "@types/node": "^22.15.3"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "@types/node": "^22.15.3"
-  }
+  "type": "commonjs"
 }

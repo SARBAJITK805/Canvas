@@ -1,25 +1,23 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { JWT_SECRET } from "@repo/backend-common/config";
+import { JWT_SECRET } from "@repo/common_backend/config";
 
 interface IJwtPayload extends JwtPayload {
     _id: string;
 }
 
-export interface IGetUserAuthInfoRequest extends Request {
+export interface AuthRequest extends Request {
     userId: string
 }
 
-export async function authMiddleware(req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) {
+export async function authMiddleware(req:Request, res: Response, next: NextFunction) {
     const token = req.headers["authorization"];
-    const decoded = await jwt.verify(token || "", JWT_SECRET) as IJwtPayload
-    if (decoded) {
-        req.userId = decoded.userId
-        next()
-    } else {
-        //unauthorized
-        res.status(403).json({
-            mgs:"Error in auth middleware"
-        })
+    try {
+        const decoded = jwt.verify(token || "", JWT_SECRET) as IJwtPayload;
+        (req as AuthRequest).userId = decoded.userId;
+        return next();
+    } catch (err) {
+        res.status(403).json({ msg: "Invalid token" });
     }
+
 }

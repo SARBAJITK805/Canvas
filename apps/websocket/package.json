@@ -2,6 +2,7 @@
   "name": "websocket",
   "version": "1.0.0",
   "description": "",
+  "type":"module",
   "main": "index.js",
   "scripts": {
     "build": "tsc -b",
@@ -22,6 +23,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/ws": "^8.18.1",
     "@repo/typescript-config": "workspace:*",
-    "@repo/backend-common":"workspace:*"
+    "@repo/common_backend":"workspace:*"
   }
 }
