@@ -24,6 +24,7 @@
     "@repo/prisma": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/jsonwebtoken": "^9.0.10",
+    "dotenv": "^17.0.1",
     "tsup": "^8.5.0"
   }
 }
