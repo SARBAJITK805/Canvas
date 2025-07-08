@@ -110,4 +110,6 @@ app.get('/room', authMiddleware, (req, res) => {
 
 })
 
-app.listen(3001)
+app.listen(3001,()=>{
+    console.log(JWT_SECRET);    
+})
