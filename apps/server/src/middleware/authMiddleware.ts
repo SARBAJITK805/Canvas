@@ -13,7 +13,7 @@ export interface AuthRequest extends Request {
 export async function authMiddleware(req:Request, res: Response, next: NextFunction) {
     const token = req.headers["authorization"];
     try {
-        const decoded = jwt.verify(token || "", JWT_SECRET) as IJwtPayload;
+        const decoded = jwt.verify(token || "", JWT_SECRET as string) as IJwtPayload;
         (req as AuthRequest).userId = decoded.userId;
         return next();
     } catch (err) {

@@ -37,9 +37,9 @@ app.post('/signin', async (req, res) => {
         })
         return
     }
-    const token =jwt.sign({
-        userId:resp.id
-    },JWT_SECRET)
+    const token = jwt.sign({
+        userId: resp.id
+    }, JWT_SECRET)
     res.json({
         msg: "Signin successful",
         token
@@ -106,10 +106,20 @@ app.post('/create-room', authMiddleware, async (req, res) => {
     }
 })
 
-app.get('/room', authMiddleware, (req, res) => {
-
+app.get('chat/:roomId', authMiddleware, async (req, res) => {
+    const roomId = Number(req.params.roomId)
+    const messages = await prisma.chat.findMany({
+        where: {
+            roomId: roomId
+        },
+        orderBy: {
+            id: "desc"
+        },
+        take: 20
+    })
+    res.json({messages})
 })
 
-app.listen(3001,()=>{
-    console.log(JWT_SECRET);    
+app.listen(3001, () => {
+    console.log("listening on oprt 3001");
 })
