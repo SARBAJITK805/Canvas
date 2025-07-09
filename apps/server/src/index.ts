@@ -106,20 +106,47 @@ app.post('/create-room', authMiddleware, async (req, res) => {
     }
 })
 
-app.get('chat/:roomId', authMiddleware, async (req, res) => {
-    const roomId = Number(req.params.roomId)
-    const messages = await prisma.chat.findMany({
-        where: {
-            roomId: roomId
-        },
-        orderBy: {
-            id: "desc"
-        },
-        take: 20
-    })
-    res.json({messages})
+app.get('/chats/:roomId', async (req, res) => {
+    try {
+        const roomId = Number(req.params.roomId)        
+        const messages = await prisma.chat.findMany({
+            where: {
+                roomId: roomId
+            },
+            orderBy: {
+                id: "desc"
+            },
+            take: 20
+        })
+        res.json({ messages })
+    } catch (error) {
+        console.log("error while getting messages ", error);
+        res.status(403).json({
+            msg: "error while getting messages"
+        })
+    }
+})
+
+app.get('/room/:slug', async (require, res) => {
+    try {
+        const slug = (require.params.slug)
+        const room = await prisma.room.findFirst({
+            where: {
+                slug
+            }
+        })
+        res.json({
+            room
+        })
+    } catch (error) {
+        console.log("error while getting room id ", error);
+        res.status(403).json({
+            msg: "error while getting room id"
+        })
+
+    }
 })
 
 app.listen(3001, () => {
-    console.log("listening on oprt 3001");
+    console.log("listening on port 3001");
 })

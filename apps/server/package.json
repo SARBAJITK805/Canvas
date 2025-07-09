@@ -7,13 +7,14 @@
   "scripts": {
     "build": "tsc -b",
     "start": "node ./dist/index.js",
-    "dev": "tsup --watch --onSuccess \"node dist/index.cjs\""
+    "dev": "tsc -b && tsup --watch --onSuccess \"node dist/index.cjs\""
   },
   "dependencies": {
     "@types/express": "^5.0.3",
     "bcryptjs": "^3.0.2",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "@repo/prisma": "workspace:*"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +22,6 @@
   "devDependencies": {
     "@repo/common": "workspace:*",
     "@repo/common_backend": "workspace:*",
-    "@repo/prisma": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/jsonwebtoken": "^9.0.10",
     "dotenv": "^17.0.1",

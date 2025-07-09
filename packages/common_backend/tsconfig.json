@@ -4,5 +4,4 @@
         "lib": ["ES2015"],
         "outDir": "dist"
     },
-    
 }
