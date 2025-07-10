@@ -17,13 +17,10 @@ export function ChatRoomClient({ messages, id }: {
                 roomId: id
             }))
             socket.onmessage = (event) => {
-                alert("recieved")
                 const parsedData = JSON.parse(event.data)
-                console.log(parsedData);
                 if (parsedData.type == "chat") {
                     setChat(c => [...c, { message: parsedData.msg }])
-                }
-                console.log(chat);                
+                }                
             }
         }
     }, [socket, loading, id])
@@ -40,7 +37,6 @@ export function ChatRoomClient({ messages, id }: {
                 msg: currMsg
             }))
             setCurrMsg("")
-            alert("msg sent")
         }}>
             Send
         </button>
