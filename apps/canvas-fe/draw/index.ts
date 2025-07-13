@@ -1,5 +1,40 @@
-export function initDraw(canvas: HTMLCanvasElement) {
+import { BACKEND_URL } from "@/config";
+import axios from "axios";
+
+type Shapes = {
+    type: "rectangle",
+    startX: number,
+    startY: number,
+    width: number,
+    height: number
+} | {
+    type: "circle",
+    startX: number,
+    startY: number,
+    width: number,
+    height: number
+}
+
+function clearCanvas(existingShapes: Shapes[], canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    existingShapes.map((shape) => {
+        if (shape.type == "rectangle") {
+            ctx.strokeRect(shape.startX, shape.startY, shape.width, shape.height)
+        }
+    })
+}
+
+async function getShapes(roomId: string) {
+    const reps = await axios.get(`${BACKEND_URL}/chats/${roomId}`)
+    return reps.data.messages;
+}
+
+
+export async function initDraw(canvas: HTMLCanvasElement, roomId: string) {
     const ctx = canvas.getContext("2d");
+
+    let existingShapes: Shapes[] = await getShapes(roomId)
+
     if (!ctx) return
 
     let startX = 0;
@@ -14,13 +49,22 @@ export function initDraw(canvas: HTMLCanvasElement) {
     })
     canvas.addEventListener("mousemove", (e) => {
         if (clicked) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            clearCanvas(existingShapes, canvas, ctx)
             ctx.strokeRect(startX, startY, e.clientX - startX, e.clientY - startY)
             console.log(e.clientX, e.clientY);
         }
     })
     canvas.addEventListener("mouseup", (e) => {
         clicked = false
+        const width = e.clientX - startX
+        const height = e.clientY - startY
+        existingShapes.push({
+            type: "rectangle",
+            startX,
+            startY,
+            width,
+            height
+        })
         console.log(e.clientX, e.clientY);
     })
 }
