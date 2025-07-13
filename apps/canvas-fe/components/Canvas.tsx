@@ -1,12 +1,15 @@
-import { initDraw } from "@/draw"
-import { useEffect, useRef } from "react"
+import { initDraw } from "@/draw";
+import { useRef, useEffect } from "react";
 
-export default function Canvas({ roomId }: { roomId: string }) {
+export function Canvas({ roomId ,socket}: {
+    roomId: string,
+    socket:WebSocket|null;
+}) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     useEffect(() => {
         const canvas = canvasRef.current
         if (canvas) {
-            initDraw(canvas, roomId)
+            initDraw(canvas, roomId,socket)
         }
 
     }, [canvasRef])
