@@ -5,9 +5,11 @@ import { authMiddleware } from "./middleware/authMiddleware"
 import { CreateRoomSchema, SigninSchema, SignupSchema } from "@repo/common/types"
 import { prisma } from "@repo/prisma/prisma"
 import bcrypt from "bcryptjs"
+import cors from "cors"
 import { AuthRequest } from "./middleware/authMiddleware"
 const app = express()
 app.use(express.json())
+app.use(cors());
 
 app.post('/signin', async (req, res) => {
     const parsedData = SigninSchema.safeParse(req.body)

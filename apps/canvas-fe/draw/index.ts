@@ -27,6 +27,7 @@ function clearCanvas(existingShapes: Shapes[], canvas: HTMLCanvasElement, ctx: C
 async function getShapes(roomId: string) {
     const reps = await axios.get(`${BACKEND_URL}/chats/${roomId}`)
     return reps.data.messages;
+    
 }
 
 
@@ -78,7 +79,8 @@ export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket
         socket.send(
             JSON.stringify({
                 type:"chat",
-                msg:JSON.stringify(shape)
+                msg:JSON.stringify(shape),
+                roomId
             })
         )
         console.log(e.clientX, e.clientY);

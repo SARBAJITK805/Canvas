@@ -10,11 +10,13 @@
     "dev": "tsc -b && tsup --watch --onSuccess \"node dist/index.cjs\""
   },
   "dependencies": {
+    "@repo/prisma": "workspace:*",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "@repo/prisma": "workspace:*"
+    "jsonwebtoken": "^9.0.2"
   },
   "keywords": [],
   "author": "",
