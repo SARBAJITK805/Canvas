@@ -50,7 +50,7 @@ wss.on('connection', async (ws, request) => {
 
         if (parsedData.type == "join_room") {
             const user = users.find(x => x.ws == ws)
-            user?.rooms.push(parsedData.roomId)
+            user?.rooms.push(parsedData.roomId.toString())
         }
 
         if (parsedData.type == "leave_room") {
@@ -61,13 +61,13 @@ wss.on('connection', async (ws, request) => {
         }
 
         if (parsedData.type == "chat") {
-            const roomId = parsedData.roomId
+            const roomId = parsedData.roomId.toString()
             const msg = parsedData.msg
 
             try {
                 await prisma.chat.create({
                 data: {
-                    roomId,
+                    roomId:Number(roomId),
                     message: msg,
                     userId
                 }
@@ -75,9 +75,8 @@ wss.on('connection', async (ws, request) => {
             } catch (error) {
                 console.log("error creating chat",error);                
             }
-
-            users.forEach(user => {
-                if (user.rooms.includes(roomId)) {
+            users.forEach(user => {                
+                if (user.rooms.includes(roomId)) {                    
                     user.ws.send(JSON.stringify({
                         type: "chat",
                         msg,

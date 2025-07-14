@@ -17,7 +17,8 @@ type Shapes = {
 
 function clearCanvas(existingShapes: Shapes[], canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    existingShapes.map((shape) => {
+
+    existingShapes.map((shape) => {  
         if (shape.type == "rectangle") {
             ctx.strokeRect(shape.startX, shape.startY, shape.width, shape.height)
         }
@@ -26,8 +27,13 @@ function clearCanvas(existingShapes: Shapes[], canvas: HTMLCanvasElement, ctx: C
 
 async function getShapes(roomId: string) {
     const reps = await axios.get(`${BACKEND_URL}/chats/${roomId}`)
-    return reps.data.messages;
-    
+    const message = reps.data.messages;
+    const shapes = message.map((msg: any) => {
+        return JSON.parse(msg.message);
+    })
+    console.log(shapes);
+    return shapes;
+
 }
 
 
@@ -37,11 +43,11 @@ export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket
     let existingShapes: Shapes[] = await getShapes(roomId)
 
     if (!ctx || !socket) return
-
     socket.onmessage = (event) => {
         const messages = JSON.parse(event.data);
+        console.log("present");        
         if (messages.type == "chat") {
-            const parsedShape = JSON.parse(messages.msg);
+            const parsedShape = JSON.parse(messages.msg);            
             existingShapes.push(parsedShape);
             clearCanvas(existingShapes, canvas, ctx);
         }
@@ -51,17 +57,17 @@ export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket
     let startY = 0
     let clicked = false
 
+    clearCanvas(existingShapes, canvas, ctx);
+
     canvas.addEventListener("mousedown", (e) => {
         clicked = true
         startX = e.clientX
         startY = e.clientY
-        console.log(e.clientX, e.clientY);
     })
     canvas.addEventListener("mousemove", (e) => {
         if (clicked) {
             clearCanvas(existingShapes, canvas, ctx)
             ctx.strokeRect(startX, startY, e.clientX - startX, e.clientY - startY)
-            console.log(e.clientX, e.clientY);
         }
     })
     canvas.addEventListener("mouseup", (e) => {
@@ -78,11 +84,10 @@ export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket
         existingShapes.push(shape)
         socket.send(
             JSON.stringify({
-                type:"chat",
-                msg:JSON.stringify(shape),
-                roomId
+                type: "chat",
+                msg: JSON.stringify(shape),
+                roomId:roomId,
             })
         )
-        console.log(e.clientX, e.clientY);
     })
 }
