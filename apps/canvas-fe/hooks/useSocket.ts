@@ -1,22 +1,52 @@
 "use client"
 
-import { WS_URL } from "@/config";
-import { useEffect, useState } from "react";
+import { Shape } from "@/components/Canvas";
+import { useEffect, useRef, useState, useCallback } from "react";
 
-export default function useSocket(roomId:string) {
+export default function useSocket(url: string, roomId: string) {
     const [loading, setLoading] = useState(true);
-    const [socket, setSocket] = useState<WebSocket | null>(null)
+    const [incomingShapes, setIncomingShapes] = useState<Shape[]>([])
+    const socketRef = useRef<WebSocket | null>(null)
+
+    const sendMessage = useCallback((data: any) => {
+        if (socketRef.current?.readyState === WebSocket.OPEN) {
+            socketRef.current.send(JSON.stringify(data));
+        } else {
+            console.warn("WebSocket not open");
+        }
+    }, []);
+
     useEffect(() => {
-        const ws = new WebSocket(`${WS_URL}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjNDE0ZDE2YS1mZWU5LTRkYzgtYWVmMy0yYmExZTQ5MjkxMDkiLCJpYXQiOjE3NTI1MTU3NjN9.E2bZJlZvgLiQ7bBlXDvQH0cqgjbzfBjRWuzM9mehcC0`)
-        ws.onopen = () => {
-            setSocket(ws)
-            ws.send(JSON.stringify({
-                type:"join_room",
+        const socket = new WebSocket(url)
+        socketRef.current = socket;
+
+        socket.onopen = () => {
+            socket.send(JSON.stringify({
+                type: "join_room",
                 roomId,
             }))
             setLoading(false)
         }
+
+        socket.onmessage = (event) => {
+            const messages = JSON.parse(event.data);
+            if (messages.type == "chat") {
+                const parsedShape = JSON.parse(messages.msg);
+                setIncomingShapes((prev) => [...prev, parsedShape]);
+            }
+        }
+
+        return () => {
+            socket.close();
+        };
+
     }, [])
 
-    return { loading, socket };
+    return {
+        socket: socketRef.current,
+        loading,
+        sendMessage,
+        incomingShapes,
+        clearIncomingShapes: () => setIncomingShapes([])
+    };
 }

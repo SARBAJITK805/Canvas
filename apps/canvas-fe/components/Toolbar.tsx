@@ -1,4 +1,3 @@
-// components/Toolbar.tsx
 import { Lock, Hand, MousePointer, Square, Diamond, Circle, ArrowRight, Minus, Pencil, Type, ImageIcon, Eraser, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

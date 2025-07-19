@@ -2,36 +2,64 @@
 import { useRef, useEffect, useState } from "react";
 import { initDraw } from "@/draw";
 import { Toolbar } from "@/components/Toolbar";
+import { getShapes, drawExistingShapes, handelMouseDown, handelMouseMove, handelMouseUp } from "@/lib/actions";
 
-export function Canvas({ roomId, socket }: { roomId: string; socket: WebSocket | null }) {
+export type Shape = {
+    type: "Rectangle" | "Circle" | "Line" | "Triangle" | "Arrow" | "Rhombus" | "Pencil" | "Eraser" | "Text",
+    startX: number,
+    startY: number,
+    width: number,
+    height: number
+}
+
+
+export function Canvas({ roomId, socket, sendShape, incomingShapes, clearIncomingShapes }: {
+    roomId: string;
+    socket: WebSocket | null;
+    sendShape: (shape: Shape) => void;
+    incomingShapes: Shape[];
+    clearIncomingShapes: () => void;
+}) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [activeTool, setActiveTool] = useState(7); // Default to pencil
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [activeTool, setActiveTool] = useState(7);
+    const [existingShapes, setexistingShapes] = useState<Shape[]>([])
 
-    const [dimensions, setDimensions] = useState({
-        width: typeof window !== "undefined" ? window.innerWidth : 800,
-        height: typeof window !== "undefined" ? window.innerHeight : 600,
-    });
 
     useEffect(() => {
-        const handleResize = () => {
-            setDimensions({
-                width: window.innerWidth,
-                height: window.innerHeight,
-            });
-        };
-
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
+        setDimensions({
+            width: window.innerWidth,
+            height: window.innerHeight,
+        });
     }, []);
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (canvas) {
-            canvas.width = dimensions.width;
-            canvas.height = dimensions.height;
-            initDraw(canvas, roomId, socket);
+        const getExistingShapes = async () => await getShapes(roomId, setexistingShapes);
+        const drawExistingShape = () => {
+            if (canvasRef.current) {
+                drawExistingShapes(existingShapes, canvasRef.current);
+            }
+        };
+        getExistingShapes();
+        drawExistingShape();
+    }, [roomId, existingShapes])
+
+    useEffect(() => {
+        if (canvasRef.current && incomingShapes.length > 0) {
+            drawExistingShapes(incomingShapes, canvasRef.current);
+            setexistingShapes((prev) => [...prev, ...incomingShapes]);
+            clearIncomingShapes();
         }
-    }, [canvasRef, dimensions, roomId, socket]);
+    }, [incomingShapes, clearIncomingShapes])
+
+    // useEffect(() => {
+    //     const canvas = canvasRef.current;
+    //     if (canvas) {
+    //         canvas.width = dimensions.width;
+    //         canvas.height = dimensions.height;
+    //          initDraw(canvas, roomId, socket);
+    //     }
+    // }, [canvasRef, dimensions, roomId, socket]);
 
     return (
         <div className="relative w-full h-full">
@@ -44,6 +72,9 @@ export function Canvas({ roomId, socket }: { roomId: string; socket: WebSocket |
                 className="block w-full h-full"
                 width={dimensions.width}
                 height={dimensions.height}
+                onMouseDown={(event)=>handelMouseDown(event)}
+                onMouseMove={(event)=>handelMouseMove(event)}
+                onMouseUp={(event)=>handelMouseUp(event)}
             />
         </div>
     );

@@ -33,7 +33,6 @@ async function getShapes(roomId: string) {
     })
     console.log(shapes);
     return shapes;
-
 }
 
 
@@ -45,7 +44,6 @@ export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket
     if (!ctx || !socket) return
     socket.onmessage = (event) => {
         const messages = JSON.parse(event.data);
-        console.log("present");        
         if (messages.type == "chat") {
             const parsedShape = JSON.parse(messages.msg);            
             existingShapes.push(parsedShape);
