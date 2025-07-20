@@ -21,8 +21,7 @@ export default function RoomCanvas({ roomId }: { roomId: string }) {
     return (
         <Canvas 
             roomId={roomId} 
-            socket={socket} 
-            sendMessage={sendMessage}
+            sendShape={sendMessage}
             incomingShapes={incomingShapes}
             clearIncomingShapes={clearIncomingShapes}
         />

@@ -1,26 +1,23 @@
-import { Lock, Hand, MousePointer, Square, Diamond, Circle, ArrowRight, Minus, Pencil, Type, ImageIcon, Eraser, LayoutGrid } from "lucide-react";
+import { MousePointer, Square, Diamond, Circle, ArrowRight, Minus, Pencil, Type, Eraser } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const tools = [
-  { icon: <Lock size={16} />, label: "" },
-  { icon: <Hand size={16} />, label: "" },
   { icon: <MousePointer size={16} />, label: "1" },
-  { icon: <Square size={16} />, label: "2" },
-  { icon: <Diamond size={16} />, label: "3" },
-  { icon: <Circle size={16} />, label: "4" },
-  { icon: <ArrowRight size={16} />, label: "5" },
-  { icon: <Minus size={16} />, label: "6" },
-  { icon: <Pencil size={16} />, label: "7" },
-  { icon: <Type size={16} />, label: "8" },
-  { icon: <ImageIcon size={16} />, label: "9" },
-  { icon: <Eraser size={16} />, label: "0" },
-  { icon: <LayoutGrid size={16} />, label: "" },
+  { icon: <Square size={16} />, label: "Rectangle" },
+  { icon: <Diamond size={16} />, label: "Rhombus" },
+  { icon: <Circle size={16} />, label: "Circle" },
+  { icon: <ArrowRight size={16} />, label: "Arrow" },
+  { icon: <Minus size={16} />, label: "Line" },
+  { icon: <Pencil size={16} />, label: "Pencil" },
+  { icon: <Type size={16} />, label: "Text" },
+  { icon: <Eraser size={16} />, label: "Eraser" },
 ];
 
-export function Toolbar({ activeToolIndex, onToolSelect }: {
+export function Toolbar({ activeToolIndex, onToolSelect, onShapeChange }: {
   activeToolIndex: number;
   onToolSelect: (index: number) => void;
+  onShapeChange: (value: string) => void;
 }) {
   return (
     <div className="flex items-center space-x-1 bg-zinc-900 rounded-xl p-2 shadow-md w-fit mx-auto mb-4">
@@ -29,16 +26,13 @@ export function Toolbar({ activeToolIndex, onToolSelect }: {
           key={index}
           variant="ghost"
           size="icon"
-          onClick={() => onToolSelect(index)}
+          onClick={() => { onToolSelect(index); onShapeChange(tool.label) }}
           className={cn(
             "flex flex-col items-center justify-center h-10 w-10 text-white",
             activeToolIndex === index && "bg-zinc-700"
           )}
         >
           {tool.icon}
-          {tool.label && (
-            <span className="text-xs text-zinc-400">{tool.label}</span>
-          )}
         </Button>
       ))}
     </div>
