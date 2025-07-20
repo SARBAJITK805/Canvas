@@ -149,6 +149,31 @@ app.get('/room/:slug', async (require, res) => {
     }
 })
 
+app.delete('/chats/:roomId/:shapeId', authMiddleware, async (req, res) => {
+    try {
+        const roomId = Number(req.params.roomId);
+        const shapeId = req.params.shapeId;
+        
+        // Delete the chat entry with this shapeId
+        await prisma.chat.deleteMany({
+            where: {
+                roomId: roomId,
+                shapeId: shapeId
+            }
+        });
+        
+        res.json({ 
+            msg: "Shape deleted successfully",
+            shapeId 
+        });
+    } catch (error) {
+        console.log("Error deleting shape:", error);
+        res.status(500).json({
+            msg: "Error deleting shape"
+        });
+    }
+});
+
 app.listen(3001, () => {
     console.log("listening on port 3001");
 })

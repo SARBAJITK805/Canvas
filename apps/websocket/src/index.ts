@@ -60,6 +60,67 @@ wss.on('connection', async (ws, request) => {
             }
         }
 
+        if (parsedData.type == "delete_shape") {
+    const roomId = parsedData.roomId.toString();
+    const shapeId = parsedData.shapeId;
+
+    try {
+        // Delete from database
+        await prisma.chat.deleteMany({
+            where: {
+                roomId: Number(roomId),
+                shapeId: shapeId
+            }
+        });
+
+        // Broadcast deletion to all users in the room
+        users.forEach(user => {                
+            if (user.rooms.includes(roomId)) {                    
+                user.ws.send(JSON.stringify({
+                    type: "shape_deleted",
+                    shapeId,
+                    roomId
+                }));
+            }
+        });
+
+    } catch (error) {
+        console.log("Error deleting shape:", error);                
+    }
+}
+
+if (parsedData.type == "create_shape") {
+    const roomId = parsedData.roomId.toString();
+    const msg = parsedData.msg;
+    const shapeId = parsedData.shapeId;
+
+    try {
+        await prisma.chat.create({
+            data: {
+                roomId: Number(roomId),
+                message: msg,
+                shapeId: shapeId,
+                userId
+            }
+        });
+        
+        // Broadcast to all users in the room
+        users.forEach(user => {                
+            if (user.rooms.includes(roomId)) {                    
+                user.ws.send(JSON.stringify({
+                    type: "shape_created",
+                    msg,
+                    shapeId,
+                    roomId
+                }));
+            }
+        });
+
+    } catch (error) {
+        console.log("Error creating shape:", error);                
+    }
+}
+
         if (parsedData.type == "chat") {
             const roomId = parsedData.roomId.toString()
             const msg = parsedData.msg
