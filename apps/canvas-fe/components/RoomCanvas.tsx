@@ -6,7 +6,7 @@ import { WS_URL } from "@/config";
 
 export default function RoomCanvas({ roomId }: { roomId: string }) {
     const { loading, socket, sendMessage, incomingShapes, clearIncomingShapes,deletedShapeIds,clearDeletedShapeIds } = useSocket(
-        `${WS_URL}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjNDE0ZDE2YS1mZWU5LTRkYzgtYWVmMy0yYmExZTQ5MjkxMDkiLCJpYXQiOjE3NTI1MTU3NjN9.E2bZJlZvgLiQ7bBlXDvQH0cqgjbzfBjRWuzM9mehcC0`, 
+        `${WS_URL}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkYzE2Y2I1Ny1mYjg3LTRhMTEtOTkyNi02MWY1MTNhNzg1NGYiLCJpYXQiOjE3NTM0MjI5MDB9.8FdjvYvVoSfVl3cfB16UWRo3vQW1MfInHYd5KP21TkM`, 
         roomId
     );
     

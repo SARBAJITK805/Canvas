@@ -12,12 +12,28 @@ interface User {
 
 const users: User[] = []
 
-function checkUser(token: string): string | null {
-    const decoded = jwt.verify(token, JWT_SECRET)
-    if (!decoded || !(decoded as JwtPayload).userId) {
+async function checkUser(token: string): Promise<string | null> {
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+        if (!decoded || !decoded.userId) {
+            return null;
+        }
+        
+        // Verify user exists in database
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.userId }
+        });
+        
+        if (!user) {
+            console.log(`User with ID ${decoded.userId} not found in database`);
+            return null;
+        }
+        
+        return decoded.userId;
+    } catch (error) {
+        console.log("Token verification error:", error);
         return null;
     }
-    return (decoded as JwtPayload).userId;
 }
 
 wss.on('connection', async (ws, request) => {
@@ -33,6 +49,8 @@ wss.on('connection', async (ws, request) => {
         ws.close()
         return;
     }
+
+    console.log(`User ${userId} connected`);
 
     users.push({
         userId,
@@ -51,21 +69,44 @@ wss.on('connection', async (ws, request) => {
         if (parsedData.type == "join_room") {
             const user = users.find(x => x.ws == ws)
             user?.rooms.push(parsedData.roomId.toString())
+            console.log(`User ${userId} joined room ${parsedData.roomId}`);
         }
 
         if (parsedData.type == "leave_room") {
             const user = users.find(x => x.ws == ws);
             if (user) {
                 user.rooms = user.rooms.filter(room => room != parsedData.roomId);
+                console.log(`User ${userId} left room ${parsedData.roomId}`);
             }
         }
 
         if (parsedData.type == "create_shape") {
+            console.log("Creating shape:", parsedData);            
             const roomId = parsedData.roomId.toString()
             const msg = parsedData.msg
             const shapeId = parsedData.shapeId
 
             try {
+                // Verify user still exists before creating chat
+                const userExists = await prisma.user.findUnique({
+                    where: { id: userId }
+                });
+
+                if (!userExists) {
+                    console.log(`User ${userId} no longer exists in database`);
+                    return;
+                }
+
+                // Verify room exists
+                const roomExists = await prisma.room.findUnique({
+                    where: { id: Number(roomId) }
+                });
+
+                if (!roomExists) {
+                    console.log(`Room ${roomId} does not exist`);
+                    return;
+                }
+
                 await prisma.chat.create({
                     data: {
                         roomId: Number(roomId),
@@ -74,8 +115,11 @@ wss.on('connection', async (ws, request) => {
                         shapeId: shapeId
                     }
                 })
+
+                console.log(`Shape created successfully for user ${userId} in room ${roomId}`);
             } catch (error) {
-                console.log("error creating shape", error);                
+                console.log("Error creating shape:", error);                
+                return;
             }
             
             users.forEach(user => {                
@@ -101,8 +145,11 @@ wss.on('connection', async (ws, request) => {
                         shapeId: shapeId
                     }
                 })
+
+                console.log(`Shape ${shapeId} deleted from room ${roomId}`);
             } catch (error) {
-                console.log("error deleting shape", error);                
+                console.log("Error deleting shape:", error);                
+                return;
             }
             
             users.forEach(user => {                
@@ -121,6 +168,16 @@ wss.on('connection', async (ws, request) => {
             const msg = parsedData.msg
 
             try {
+                // Verify user still exists before creating chat
+                const userExists = await prisma.user.findUnique({
+                    where: { id: userId }
+                });
+
+                if (!userExists) {
+                    console.log(`User ${userId} no longer exists in database`);
+                    return;
+                }
+
                 await prisma.chat.create({
                     data: {
                         roomId: Number(roomId),
@@ -129,7 +186,8 @@ wss.on('connection', async (ws, request) => {
                     }
                 })
             } catch (error) {
-                console.log("error creating chat", error);                
+                console.log("Error creating chat:", error);                
+                return;
             }
             
             users.forEach(user => {                
@@ -143,4 +201,12 @@ wss.on('connection', async (ws, request) => {
             })
         }
     })
+
+    ws.on('close', () => {
+        const index = users.findIndex(u => u.ws === ws);
+        if (index !== -1) {
+            console.log(`User ${userId} disconnected`);
+            users.splice(index, 1);
+        }
+    });
 })
