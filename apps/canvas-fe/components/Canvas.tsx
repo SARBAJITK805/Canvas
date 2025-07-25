@@ -2,6 +2,8 @@
 
 import { useRef, useEffect, useState } from "react";
 import { Toolbar } from "@/components/Toolbar";
+import axios from "axios";
+import { BACKEND_URL } from "@/config";
 import { getShapes, drawExistingShapes, handelMouseDown, handelMouseMove, handelMouseUp, handelCanvasClick, handleEraserClick } from "@/lib/actions";
 
 export type Shape = {
@@ -15,11 +17,13 @@ export type Shape = {
     fontSize?: number,
 }
 
-export function Canvas({ roomId, sendShape, incomingShapes, clearIncomingShapes }: {
+export function Canvas({ roomId, sendShape, incomingShapes, clearIncomingShapes, deletedShapeIds, clearDeletedShapeIds }: {
     roomId: string;
     sendShape: any;
+    deletedShapeIds: any;
     incomingShapes: Shape[];
     clearIncomingShapes: () => void;
+    clearDeletedShapeIds: () => void;
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -30,6 +34,39 @@ export function Canvas({ roomId, sendShape, incomingShapes, clearIncomingShapes 
     const [isTextMode, setIsTextMode] = useState(false);
     const [textInput, setTextInput] = useState("");
     const [textPosition, setTextPosition] = useState<{ x: number, y: number } | null>(null);
+
+    const initializeCanvas = async () => {
+        try {
+            const response = await axios.get(`${BACKEND_URL}/chats/${roomId}`);
+            const messages = response.data.messages;
+            const shapes = messages.map((msg: any) => {
+                const shapeData = JSON.parse(msg.message);
+                return {
+                    ...shapeData,
+                    id: msg.shapeId || `shape_${msg.id}`
+                };
+            });
+
+            setExistingShapes(shapes);
+
+            if (canvasRef.current) {
+                drawExistingShapes(shapes, canvasRef.current);
+            }
+        } catch (error) {
+            console.error("Error fetching shapes:", error);
+        }
+    };
+
+    // Redraw canvas whenever existingShapes changes or canvas dimensions change
+    const redrawCanvas = () => {
+        if (canvasRef.current) {
+            const ctx = canvasRef.current.getContext("2d");
+            if (ctx) {
+                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                drawExistingShapes(existingShapes, canvasRef.current);
+            }
+        }
+    };
 
     useEffect(() => {
         if (deletedShapeIds.length > 0) {
@@ -54,16 +91,18 @@ export function Canvas({ roomId, sendShape, incomingShapes, clearIncomingShapes 
         return () => window.removeEventListener('resize', updateDimensions);
     }, []);
 
+    // Redraw when dimensions change
     useEffect(() => {
-        const getExistingShapes = async () => await getShapes(roomId, setExistingShapes);
-        const drawExistingShape = () => {
-            if (canvasRef.current) {
-                drawExistingShapes(existingShapes, canvasRef.current);
-            }
-        };
-        getExistingShapes();
-        drawExistingShape();
-    }, [roomId, existingShapes])
+        if (canvasRef.current && dimensions.width > 0 && dimensions.height > 0) {
+            setTimeout(() => {
+                redrawCanvas();
+            }, 10); // Small delay to ensure canvas is resized
+        }
+    }, [dimensions, existingShapes]);
+
+    useEffect(() => {
+        initializeCanvas()
+    }, [roomId])
 
     useEffect(() => {
         if (canvasRef.current && incomingShapes.length > 0) {
@@ -159,7 +198,7 @@ export function Canvas({ roomId, sendShape, incomingShapes, clearIncomingShapes 
                             event.nativeEvent,
                             canvasRef.current,
                             existingShapes,
-                            setExistingShapes,
+                            setExistingShapes, 
                             roomId,
                             sendShape
                         );

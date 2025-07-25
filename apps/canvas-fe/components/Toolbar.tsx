@@ -30,8 +30,7 @@ export function Toolbar({ activeToolIndex, onToolSelect, onShapeChange }: {
           className={cn(
             "flex flex-col items-center justify-center h-10 w-10 text-white",
             activeToolIndex === index && "bg-zinc-700"
-          )}
-        >
+          )}>
           {tool.icon}
         </Button>
       ))}

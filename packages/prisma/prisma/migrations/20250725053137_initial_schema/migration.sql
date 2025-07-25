@@ -4,7 +4,7 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "photo" TEXT NOT NULL,
+    "photo" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -25,9 +25,13 @@ CREATE TABLE "Chat" (
     "roomId" INTEGER NOT NULL,
     "message" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "shapeId" TEXT,
 
     CONSTRAINT "Chat_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Room_slug_key" ON "Room"("slug");

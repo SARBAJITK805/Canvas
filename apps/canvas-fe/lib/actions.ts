@@ -68,7 +68,6 @@ export async function getShapes(roomId: string, setexistingShapes: (arg: any) =>
                 id: msg.shapeId || `shape_${msg.id}`
             };
         });
-        console.log(shapes);
         setexistingShapes(shapes);
     } catch (error) {
         console.error("Error fetching shapes:", error);
@@ -115,7 +114,10 @@ export function drawExistingShapes(existingShapes: Shape[], canvas: HTMLCanvasEl
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     
-    existingShapes.map((shape) => {
+    // Clear the entire canvas first
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    existingShapes.forEach((shape) => {
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 2;
         
@@ -167,20 +169,26 @@ export async function handleEraserClick(
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
+    // Find the topmost shape that contains the click point
     for (let i = existingShapes.length - 1; i >= 0; i--) {
         const shape = existingShapes[i];
         
         if (isPointInShape(x, y, shape)) {
+            // Remove from local state immediately for responsive UI
+            const updatedShapes = existingShapes.filter((_, index) => index !== i);
+            setExistingShapes(updatedShapes);
+            
+            // Redraw canvas immediately
+            drawExistingShapes(updatedShapes, canvas);
+            
+            // Send delete message to other clients
             sendShape({
                 type: "delete_shape",
                 shapeId: shape.id,
                 roomId: roomId,
             });
             
-            const updatedShapes = existingShapes.filter((_, index) => index !== i);
-            setExistingShapes(updatedShapes);
-            
-            break;
+            break; // Only delete one shape per click
         }
     }
 }
@@ -274,8 +282,7 @@ export function handelMouseUp(
     const width = currentX - startPoint.x;
     const height = currentY - startPoint.y;
     
-    // Generate unique ID for the shape
-    const shapeId = `shape_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const shapeId = `shape_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     
     const shape: Shape = {
         id: shapeId,
